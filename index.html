@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Catálogo | Tienda LM</title>
+  <meta name="description" content="Catálogo simple y rápido: productos, precios, búsqueda, filtros y orden con HTML/CSS/JS puro." />
+  <meta name="color-scheme" content="light dark" />
+  <style>
+    :root {
+      --brand: #1e3a8a; /* azul elegante */
+      --brand-2: #0ea5e9; /* acento */
+      --bg: #0b1220;
+      --surface: #0f172a;
+      --text: #0f172a;
+      --muted: #64748b;
+      --card: #ffffff;
+      --ring: rgba(14,165,233,.3);
+      --ok: #22c55e;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1220;
+        --surface: #0f172a;
+        --text: #e2e8f0;
+        --card: #111827;
+      }
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--text);
+      background: linear-gradient(180deg, rgba(30,58,138,0.06), transparent 200px);
+    }
+
+    .container { width: min(1200px, 92%); margin: 0 auto; }
+
+    header {
+      position: sticky; top: 0; z-index: 20;
+      backdrop-filter: blur(8px);
+      background: color-mix(in oklab, white 75%, transparent);
+      border-bottom: 1px solid color-mix(in oklab, var(--brand) 12%, transparent);
+    }
+    @media (prefers-color-scheme: dark) {
+      header { background: color-mix(in oklab, #0b1220 75%, transparent); }
+    }
+    .header-inner {
+      display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: center;
+      padding: .9rem 0;
+    }
+    .brand {
+      display: flex; align-items: center; gap: .75rem; font-weight: 800; letter-spacing: .3px;
+    }
+    .brand .logo {
+      width: 38px; height: 38px; border-radius: 12px; background: radial-gradient(70% 70% at 25% 30%, var(--brand-2), var(--brand));
+      box-shadow: 0 8px 20px color-mix(in oklab, var(--brand) 30%, transparent);
+    }
+    .brand span { font-size: clamp(1rem, 2.2vw, 1.3rem); }
+
+    .toolbar { display: flex; flex-wrap: wrap; gap: .6rem; justify-content: flex-end; }
+    .input, select, button {
+      font: inherit; border-radius: 12px; border: 1px solid color-mix(in oklab, var(--brand) 15%, transparent);
+      padding: .6rem .8rem; background: var(--card); color: var(--text);
+      outline: none; transition: box-shadow .15s ease, border-color .15s ease, transform .06s ease;
+    }
+    .input:focus, select:focus, button:focus { box-shadow: 0 0 0 6px var(--ring); border-color: var(--brand-2); }
+    .input[type="search"] { min-width: min(62ch, 50vw); }
+
+    .filterbar {
+      display: grid; gap: .75rem; grid-template-columns: 1fr; align-items: start; padding: 1rem 0 1.2rem;
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .chip {
+      padding: .45rem .7rem; border-radius: 999px; border: 1px solid color-mix(in oklab, var(--brand) 18%, transparent);
+      background: var(--card); cursor: pointer; user-select: none; font-size: .92rem;
+    }
+    .chip.active { background: color-mix(in oklab, var(--brand) 12%, var(--card)); border-color: var(--brand-2); }
+
+    .range { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+    .range input { width: 7.5rem; }
+
+    .stats { font-size: .92rem; color: var(--muted); }
+
+    main { padding: 1.2rem 0 3rem; }
+
+    .grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem;
+    }
+
+    .card {
+      background: var(--card); border: 1px solid color-mix(in oklab, var(--brand) 10%, transparent); border-radius: 16px; overflow: clip;
+      box-shadow: 0 6px 20px rgba(0,0,0,.06); display: grid; grid-template-rows: auto 1fr auto;
+      transition: transform .08s ease, box-shadow .2s ease;
+    }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0,0,0,.12); }
+
+    .card .thumb {
+      aspect-ratio: 1 / 1; background: #f1f5f9; display: grid; place-items: center; overflow: hidden;
+    }
+    .card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .card .body { padding: .8rem .9rem; display: grid; gap: .45rem; }
+    .title { font-weight: 700; line-height: 1.2; }
+    .meta { font-size: .88rem; color: var(--muted); display: flex; gap: .4rem; flex-wrap: wrap; }
+    .price { font-weight: 800; font-size: 1.05rem; }
+
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; padding: .8rem .9rem .9rem; }
+    .btn { cursor: pointer; text-align: center; border: 1px solid color-mix(in oklab, var(--brand) 15%, transparent); background: var(--card); }
+    .btn.primary { background: linear-gradient(180deg, color-mix(in oklab, var(--brand) 14%, transparent), color-mix(in oklab, var(--brand) 8%, transparent)); }
+    .btn:hover { transform: translateY(-1px); }
+
+    .empty { text-align: center; padding: 2rem; color: var(--muted); border: 1px dashed color-mix(in oklab, var(--brand) 15%, transparent); border-radius: 16px; }
+
+    dialog { border: none; border-radius: 20px; padding: 0; width: min(860px, 96%); background: var(--card); color: var(--text); }
+    dialog::backdrop { backdrop-filter: blur(2px); background: rgba(0,0,0,.35); }
+    .modal { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+    .modal .left { padding: 0; }
+    .modal .right { padding: 1rem 1rem 1.2rem; display: grid; gap: .75rem; }
+    .modal .close { position: absolute; right: .6rem; top: .6rem; }
+    @media (max-width: 800px) {
+      .modal { grid-template-columns: 1fr; }
+    }
+
+    footer { padding: 2rem 0; color: var(--muted); font-size: .9rem; text-align: center; }
+
+    /* Utilidades */
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    .row { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container header-inner">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <span>TIENDA LM · Catálogo</span>
+      </div>
+      <div class="toolbar">
+        <input id="q" class="input" type="search" placeholder="Buscar producto, color, marca… (Ctrl+/)" aria-label="Buscar" />
+        <select id="sort" title="Ordenar">
+          <option value="new">Más nuevos</option>
+          <option value="price-asc">Precio: menor a mayor</option>
+          <option value="price-desc">Precio: mayor a menor</option>
+          <option value="name">Nombre (A–Z)</option>
+        </select>
+        <button id="clear" class="btn" title="Limpiar filtros">Limpiar</button>
+      </div>
+    </div>
+    <div class="container filterbar">
+      <div class="row">
+        <div class="chips" id="chips"></div>
+      </div>
+      <div class="row">
+        <div class="range">
+          <label for="min">Min Bs</label>
+          <input id="min" class="input" type="number" inputmode="decimal" placeholder="0" min="0" step="0.01" />
+          <label for="max">Max Bs</label>
+          <input id="max" class="input" type="number" inputmode="decimal" placeholder="Sin límite" min="0" step="0.01" />
+          <span class="stats" id="stats">—</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="grid" class="grid" role="list"></div>
+    <div id="empty" class="empty" hidden>No hay resultados con los filtros actuales.</div>
+  </main>
+
+  <!--<footer>
+    <div class="container">
+      Hecho con HTML/CSS/JS puro · Personaliza colores en <code>:root</code> · Imágenes de ejemplo vía placehold.co
+    </div>
+  </footer> -->
+
+  <!-- Modal detalle -->
+  <dialog id="detailDialog" aria-labelledby="detailTitle">
+    <form method="dialog">
+      <button class="btn close" aria-label="Cerrar">✕</button>
+    </form>
+    <div class="modal">
+      <div class="left">
+        <div class="thumb"><img id="detailImg" alt="Imagen del producto" loading="lazy" /></div>
+      </div>
+      <div class="right">
+        <h2 id="detailTitle" class="title"></h2>
+        <div class="meta" id="detailMeta"></div>
+        <div id="detailPrice" class="price"></div>
+        <p id="detailDesc"></p>
+        <div class="actions">
+          <a id="waLink" class="btn primary" href="#" target="_blank" rel="noopener">Consultar por WhatsApp</a>
+          <button id="copyBtn" class="btn" type="button">Copiar ficha</button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    // --- Datos de ejemplo (reemplázalos por los tuyos) ---
+    /** Estructura de cada producto:
+     * { id, nombre, categoria, precio, imagen, descripcion, tags: [""], creado: "YYYY-MM-DD" }
+     */
+    const PRODUCTS = [
+      { id: "ZAP-001", nombre: "Zapatillas Runner Azul", categoria: "Zapatillas", precio: 399.99, imagen: "https://placehold.co/600x600/png?text=Runner+Azul", descripcion: "Zapatillas ligeras para uso diario, suela de EVA y malla transpirable.", tags: ["azul","running","unisex"], creado: "2025-07-12" },
+      { id: "ZAP-002", nombre: "Zapatillas Urban Negras", categoria: "Zapatillas", precio: 459.50, imagen: "https://placehold.co/600x600/png?text=Urban+Black", descripcion: "Estilo urbano con plantilla memory foam y capellada de cuero sintético.", tags: ["negro","urbano"], creado: "2025-06-28" },
+      { id: "ZAP-003", nombre: "Zapatillas Retro Blanca", categoria: "Zapatillas", precio: 349.00, imagen: "https://placehold.co/600x600/png?text=Retro+White", descripcion: "Clásicas de perfil bajo, combinan con todo.", tags: ["blanco","retro"], creado: "2025-05-30" },
+      { id: "ROP-101", nombre: "Polera Oversize LM", categoria: "Ropa", precio: 110.00, imagen: "https://placehold.co/600x600/png?text=Polera+Oversize", descripcion: "100% algodón peinado, corte relajado.", tags: ["polera","blanco","unisex"], creado: "2025-07-05" },
+      { id: "ROP-102", nombre: "Buzo Jogger Gris", categoria: "Ropa", precio: 160.00, imagen: "https://placehold.co/600x600/png?text=Jogger+Gris", descripcion: "French terry con puños elásticos, cómodo para todo el día.", tags: ["pantalón","gris"], creado: "2025-07-01" },
+      { id: "ROP-103", nombre: "Campera Corta Viento", categoria: "Ropa", precio: 220.00, imagen: "https://placehold.co/600x600/png?text=Corta+Viento", descripcion: "Resistente al viento y salpicaduras, ideal para running urbano.", tags: ["campera","azul"], creado: "2025-06-20" },
+      { id: "ACC-201", nombre: "Gorra Curva Azul Marino", categoria: "Accesorios", precio: 70.00, imagen: "https://placehold.co/600x600/png?text=Gorra+Marino", descripcion: "Ajustable, visera precurvada, logo frontal bordado.", tags: ["gorra","marino"], creado: "2025-07-10" },
+      { id: "ACC-202", nombre: "Medias Deportivas (Pack x3)", categoria: "Accesorios", precio: 55.00, imagen: "https://placehold.co/600x600/png?text=Medias+x3", descripcion: "Algodón + elastano, respirables.", tags: ["medias","pack"], creado: "2025-05-25" },
+      { id: "ACC-203", nombre: "Mochila Urbana 20L", categoria: "Accesorios", precio: 180.00, imagen: "https://placehold.co/600x600/png?text=Mochila+20L", descripcion: "Compartimento para laptop y bolsillos internos.", tags: ["mochila","urbano"], creado: "2025-06-05" },
+      { id: "ZAP-004", nombre: "Zapatillas Trail Grises", categoria: "Zapatillas", precio: 520.00, imagen: "https://placehold.co/600x600/png?text=Trail+Gris", descripcion: "Agarre extra para terrenos irregulares.", tags: ["trail","gris"], creado: "2025-07-18" },
+      { id: "ROP-104", nombre: "Polera Técnica DryFit", categoria: "Ropa", precio: 130.00, imagen: "https://placehold.co/600x600/png?text=Polera+DryFit", descripcion: "Secado rápido y antibacterial.", tags: ["polera","running"], creado: "2025-07-14" },
+      { id: "ACC-204", nombre: "Riñonera Minimal", categoria: "Accesorios", precio: 95.00, imagen: "https://placehold.co/600x600/png?text=Ri%C3%B1onera+Minimal", descripcion: "Liviana, para celular y llaves.", tags: ["riñonera","negro"], creado: "2025-07-02" }
+    ];
+
+    // --- Estado y utilidades ---
+    const $ = (s, r = document) => r.querySelector(s);
+    const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+    const byId = id => document.getElementById(id);
+
+    const state = {
+      q: "",
+      categoria: "Todos",
+      min: "",
+      max: "",
+      sort: "new"
+    };
+
+    const fmt = new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB', maximumFractionDigits: 2 });
+    const formatBs = n => fmt.format(n).replace('BOB', 'Bs');
+
+    const categories = ["Todos", ...Array.from(new Set(PRODUCTS.map(p => p.categoria)))];
+
+    function renderChips() {
+      const wrap = byId('chips');
+      wrap.innerHTML = '';
+      categories.forEach(cat => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'chip' + (state.categoria === cat ? ' active' : '');
+        chip.textContent = cat;
+        chip.setAttribute('aria-pressed', state.categoria === cat);
+        chip.addEventListener('click', () => {
+          state.categoria = cat;
+          $$('.chip', wrap).forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          applyAndRender();
+        });
+        wrap.appendChild(chip);
+      });
+    }
+
+    function applyFilters(list) {
+      let out = list.slice();
+      const q = state.q.trim().toLowerCase();
+      if (q) out = out.filter(p => (
+        p.nombre.toLowerCase().includes(q) ||
+        p.descripcion.toLowerCase().includes(q) ||
+        (p.tags || []).some(t => t.toLowerCase().includes(q))
+      ));
+      if (state.categoria !== 'Todos') out = out.filter(p => p.categoria === state.categoria);
+
+      const min = parseFloat(state.min);
+      const max = parseFloat(state.max);
+      if (!Number.isNaN(min)) out = out.filter(p => p.precio >= min);
+      if (!Number.isNaN(max)) out = out.filter(p => p.precio <= max);
+
+      switch (state.sort) {
+        case 'price-asc': out.sort((a,b)=>a.precio-b.precio); break;
+        case 'price-desc': out.sort((a,b)=>b.precio-a.precio); break;
+        case 'name': out.sort((a,b)=>a.nombre.localeCompare(b.nombre)); break;
+        default: out.sort((a,b)=> new Date(b.creado) - new Date(a.creado));
+      }
+      return out;
+    }
+
+    function renderGrid(items) {
+      const grid = byId('grid');
+      grid.innerHTML = '';
+      if (!items.length) {
+        byId('empty').hidden = false; return;
+      } else { byId('empty').hidden = true; }
+
+      const frag = document.createDocumentFragment();
+      items.forEach(p => {
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.setAttribute('role','listitem');
+        card.innerHTML = `
+          <div class="thumb">
+            <img src="${p.imagen}" alt="${p.nombre}" loading="lazy" />
+          </div>
+          <div class="body">
+            <div class="title">${p.nombre}</div>
+            <div class="meta">
+              <span>${p.categoria}</span>
+              <span>•</span>
+              <span>${(p.tags||[]).slice(0,2).join(' · ')}</span>
+            </div>
+            <div class="price">${formatBs(p.precio)}</div>
+          </div>
+          <div class="actions">
+            <button class="btn" data-action="ver">Ver</button>
+            <a class="btn primary" data-action="wa" href="#" target="_blank" rel="noopener">WhatsApp</a>
+          </div>
+        `;
+        card.querySelector('[data-action="ver"]').addEventListener('click', ()=> openDetail(p));
+        const wa = card.querySelector('[data-action="wa"]');
+        const msg = encodeURIComponent(`Hola, me interesa el producto ${p.nombre} (ID ${p.id}) a ${formatBs(p.precio)}.`);
+        wa.href = `https://wa.me/?text=${msg}`; // opcional: agrega tu número, ej: wa.me/5917XXXXXXX
+        frag.appendChild(card);
+      });
+      grid.appendChild(frag);
+    }
+
+    function openDetail(p) {
+      byId('detailTitle').textContent = p.nombre;
+      byId('detailImg').src = p.imagen;
+      byId('detailImg').alt = p.nombre;
+      byId('detailMeta').textContent = `${p.categoria} · ${(p.tags||[]).join(' · ')}`;
+      byId('detailPrice').textContent = formatBs(p.precio);
+      byId('detailDesc').textContent = p.descripcion;
+      const msg = encodeURIComponent(`Hola, me interesa el producto ${p.nombre} (ID ${p.id}) a ${formatBs(p.precio)}.`);
+      byId('waLink').href = `https://wa.me/?text=${msg}`;
+
+      const dialog = byId('detailDialog');
+      dialog.showModal();
+    }
+
+    function applyAndRender() {
+      const items = applyFilters(PRODUCTS);
+      renderGrid(items);
+      // stats
+      const total = PRODUCTS.length;
+      const visible = items.length;
+      byId('stats').textContent = `${visible} de ${total} productos visibles`;
+    }
+
+    function initControls() {
+      const q = byId('q');
+      const sort = byId('sort');
+      const min = byId('min');
+      const max = byId('max');
+
+      q.addEventListener('input', ()=>{ state.q = q.value; applyAndRender(); });
+      sort.addEventListener('change', ()=>{ state.sort = sort.value; applyAndRender(); });
+
+      function sanitize(n){
+        if(n === '') return '';
+        const f = parseFloat(n);
+        return Number.isNaN(f) ? '' : Math.max(0, f).toString();
+      }
+      min.addEventListener('input', ()=>{ state.min = sanitize(min.value); applyAndRender(); });
+      max.addEventListener('input', ()=>{ state.max = sanitize(max.value); applyAndRender(); });
+
+      byId('clear').addEventListener('click', ()=>{
+        state.q = '';
+        state.categoria = 'Todos';
+        state.min = '';
+        state.max = '';
+        state.sort = 'new';
+        q.value = '';
+        sort.value = 'new';
+        min.value = '';
+        max.value = '';
+        renderChips();
+        applyAndRender();
+      });
+
+      // Acceso rápido a búsqueda
+      window.addEventListener('keydown', (e)=>{
+        if ((e.ctrlKey || e.metaKey) && e.key === '/') { e.preventDefault(); q.focus(); }
+      });
+    }
+
+    // --- Inicio ---
+    renderChips();
+    initControls();
+    applyAndRender();
+  </script>
+</body>
+</html>
