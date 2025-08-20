@@ -124,6 +124,26 @@
     @media (max-width: 800px) {
       .modal { grid-template-columns: 1fr; }
     }
+    /* 🔹 Optimización para móviles */
+    @media (max-width: 480px) {
+      dialog {
+        width: 95%;
+        max-width: 400px;
+      }
+      .modal .thumb img {
+        max-height: 220px;
+        object-fit: cover;
+      }
+      .modal .right {
+        padding: 0.8rem;
+      }
+      .modal .right h2 {
+        font-size: 1.2rem;
+      }
+      .modal .right .price {
+        font-size: 1rem;
+      }
+    }
 
     footer { padding: 2rem 0; color: var(--muted); font-size: .9rem; text-align: center; }
 
@@ -136,8 +156,11 @@
   <header>
     <div class="container header-inner">
       <div class="brand">
-        <div class="logo" aria-hidden="true"></div>
-        <span>TIENDA LM · Catálogo</span>
+        <header>
+          <img src="INICIALES1.png" alt="Logo Tienda LM" style="height: 60px;" />
+        </header>
+        <!--<div class="logo" aria-hidden="true"></div>-->
+        <span>Catálogo</span>
       </div>
       <div class="toolbar">
         <input id="q" class="input" type="search" placeholder="Buscar producto, color, marca… (Ctrl+/)" aria-label="Buscar" />
