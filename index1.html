@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Catálogo | Tienda LM</title>
+  <meta name="description" content="Catálogo simple y rápido: productos, precios, búsqueda, filtros y orden con HTML/CSS/JS puro." />
+  <meta name="color-scheme" content="light dark" />
+  <style>
+    :root {
+      --brand: #1e3a8a; /* azul elegante */
+      --brand-2: #0ea5e9; /* acento */
+      --bg: #0b1220;
+      --surface: #0f172a;
+      --text: #0f172a;
+      --muted: #64748b;
+      --card: #ffffff;
+      --ring: rgba(14,165,233,.3);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1220;
+        --surface: #0f172a;
+        --text: #e2e8f0;
+        --card: #111827;
+      }
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial;
+      color: var(--text);
+      background: linear-gradient(180deg, rgba(30,58,138,0.06), transparent 200px);
+    }
+
+    .container { width: min(1200px, 92%); margin: 0 auto; }
+
+    header {
+      position: sticky; top: 0; z-index: 20;
+      backdrop-filter: blur(8px);
+      background: color-mix(in oklab, white 75%, transparent);
+      border-bottom: 1px solid color-mix(in oklab, var(--brand) 12%, transparent);
+    }
+    @media (prefers-color-scheme: dark) {
+      header { background: color-mix(in oklab, #0b1220 75%, transparent); }
+    }
+    .header-inner {
+      display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: center;
+      padding: .9rem 0;
+    }
+    .brand {
+      display: flex; align-items: center; gap: .75rem; font-weight: 800;
+    }
+    .brand img {
+      height: 50px;
+    }
+
+    .toolbar { display: flex; flex-wrap: wrap; gap: .6rem; justify-content: flex-end; }
+    .input, select, button {
+      font: inherit; border-radius: 12px; border: 1px solid color-mix(in oklab, var(--brand) 15%, transparent);
+      padding: .6rem .8rem; background: var(--card); color: var(--text);
+      outline: none; transition: box-shadow .15s ease, border-color .15s ease;
+    }
+    .input:focus, select:focus, button:focus { box-shadow: 0 0 0 6px var(--ring); border-color: var(--brand-2); }
+    .input[type="search"] { min-width: min(62ch, 50vw); }
+
+    main { padding: 1.2rem 0 3rem; }
+
+    .grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem;
+    }
+
+    .card {
+      background: var(--card); border: 1px solid color-mix(in oklab, var(--brand) 10%, transparent); border-radius: 16px; overflow: hidden;
+      box-shadow: 0 6px 20px rgba(0,0,0,.06); display: grid; grid-template-rows: auto 1fr auto;
+      transition: transform .08s ease;
+    }
+    .card:hover { transform: translateY(-2px); }
+
+    .card .thumb { aspect-ratio: 1 / 1; background: #f1f5f9; }
+    .card img { width: 100%; height: 100%; object-fit: cover; }
+
+    .card .body { padding: .8rem .9rem; }
+    .title { font-weight: 700; }
+    .meta { font-size: .88rem; color: var(--muted); }
+    .price { font-weight: 800; font-size: 1.05rem; }
+
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; padding: .8rem .9rem .9rem; }
+    .btn { cursor: pointer; text-align: center; border: 1px solid color-mix(in oklab, var(--brand) 15%, transparent); background: var(--card); border-radius: 10px; }
+    .btn.primary { background: var(--brand); color: white; }
+
+    .empty { text-align: center; padding: 2rem; color: var(--muted); }
+
+    /* === Modal (detalle de producto) === */
+    dialog { border: none; border-radius: 20px; padding: 0; width: min(860px, 96%); background: var(--card); color: var(--text); }
+    dialog::backdrop { backdrop-filter: blur(2px); background: rgba(0,0,0,.35); }
+
+    .modal { display: grid; grid-template-columns: 1fr 1fr; }
+    .modal .left { padding: 0; }
+    .modal .right { padding: 1rem; display: grid; gap: .75rem; }
+    .modal .close { position: absolute; right: .6rem; top: .6rem; }
+
+    @media (max-width: 800px) {
+      .modal { grid-template-columns: 1fr; } /* Imagen arriba, datos abajo */
+    }
+
+    /* 🔹 Optimización para móviles */
+    @media (max-width: 480px) {
+      dialog {
+        width: 95%;
+        max-width: 400px;
+      }
+      .modal .thumb img {
+        max-height: 220px;
+        object-fit: cover;
+      }
+      .modal .right {
+        padding: 0.8rem;
+      }
+      .modal .right h2 {
+        font-size: 1.2rem;
+      }
+      .modal .right .price {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container header-inner">
+      <div class="brand">
+        <img src="INICIALES1.png" alt="Logo Tienda LM">
+        <span>Catálogo</span>
+      </div>
+      <div class="toolbar">
+        <input id="q" class="input" type="search" placeholder="Buscar producto…" />
+        <select id="sort">
+          <option value="new">Más nuevos</option>
+          <option value="price-asc">Precio: menor a mayor</option>
+          <option value="price-desc">Precio: mayor a menor</option>
+          <option value="name">Nombre (A–Z)</option>
+        </select>
+        <button id="clear" class="btn">Limpiar</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="grid" class="grid"></div>
+    <div id="empty" class="empty" hidden>No hay resultados con los filtros actuales.</div>
+  </main>
+
+  <!-- Modal detalle -->
+  <dialog id="detailDialog" aria-labelledby="detailTitle">
+    <form method="dialog">
+      <button class="btn close" aria-label="Cerrar">✕</button>
+    </form>
+    <div class="modal">
+      <div class="left">
+        <div class="thumb"><img id="detailImg" alt="Imagen del producto" /></div>
+      </div>
+      <div class="right">
+        <h2 id="detailTitle" class="title"></h2>
+        <div class="meta" id="detailMeta"></div>
+        <div id="detailPrice" class="price"></div>
+        <p id="detailDesc"></p>
+        <div class="actions">
+          <a id="waLink" class="btn primary" href="#" target="_blank" rel="noopener">Consultar por WhatsApp</a>
+          <button id="copyBtn" class="btn" type="button">Copiar ficha</button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    const PRODUCTS = [
+      { id: "ZAP-001", nombre: "Zapatillas Runner Azul", categoria: "Zapatillas", precio: 399.99, imagen: "https://placehold.co/600x600/png?text=Runner+Azul", descripcion: "Zapatillas ligeras para uso diario.", tags: ["azul","running"], creado: "2025-07-12" },
+      { id: "ROP-101", nombre: "Polera Oversize LM", categoria: "Ropa", precio: 110.00, imagen: "https://placehold.co/600x600/png?text=Polera+Oversize", descripcion: "100% algodón, corte relajado.", tags: ["polera","blanco"], creado: "2025-07-05" }
+    ];
+
+    const byId = id => document.getElementById(id);
+    const state = { q: "", sort: "new" };
+    const fmt = new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' });
+    const formatBs = n => fmt.format(n).replace('BOB', 'Bs');
+
+    function applyFilters(list) {
+      let out = list.slice();
+      if (state.q) out = out.filter(p => p.nombre.toLowerCase().includes(state.q.toLowerCase()));
+      switch (state.sort) {
+        case 'price-asc': out.sort((a,b)=>a.precio-b.precio); break;
+        case 'price-desc': out.sort((a,b)=>b.precio-a.precio); break;
+        case 'name': out.sort((a,b)=>a.nombre.localeCompare(b.nombre)); break;
+        default: out.sort((a,b)=> new Date(b.creado) - new Date(a.creado));
+      }
+      return out;
+    }
+
+    function renderGrid(items) {
+      const grid = byId('grid');
+      grid.innerHTML = '';
+      if (!items.length) { byId('empty').hidden = false; return; }
+      byId('empty').hidden = true;
+
+      items.forEach(p => {
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="thumb"><img src="${p.imagen}" alt="${p.nombre}"></div>
+          <div class="body">
+            <div class="title">${p.nombre}</div>
+            <div class="meta">${p.categoria}</div>
+            <div class="price">${formatBs(p.precio)}</div>
+          </div>
+          <div class="actions">
+            <button class="btn" data-action="ver">Ver</button>
+            <a class="btn primary" data-action="wa" href="#">WhatsApp</a>
+          </div>
+        `;
+        card.querySelector('[data-action="ver"]').addEventListener('click', ()=> openDetail(p));
+        card.querySelector('[data-action="wa"]').href = `https://wa.me/?text=${encodeURIComponent("Hola, me interesa " + p.nombre + " ("+formatBs(p.precio)+")")}`;
+        grid.appendChild(card);
+      });
+    }
+
+    function openDetail(p) {
+      byId('detailTitle').textContent = p.nombre;
+      byId('detailImg').src = p.imagen;
+      byId('detailMeta').textContent = p.categoria;
+      byId('detailPrice').textContent = formatBs(p.precio);
+      byId('detailDesc').textContent = p.descripcion;
+      byId('waLink').href = `https://wa.me/?text=${encodeURIComponent("Hola, me interesa " + p.nombre + " ("+formatBs(p.precio)+")")}`;
+      byId('detailDialog').showModal();
+    }
+
+    function applyAndRender() { renderGrid(applyFilters(PRODUCTS)); }
+
+    byId('q').addEventListener('input', e => { state.q = e.target.value; applyAndRender(); });
+    byId('sort').addEventListener('change', e => { state.sort = e.target.value; applyAndRender(); });
+    byId('clear').addEventListener('click', ()=>{ state.q=""; state.sort="new"; byId('q').value=""; byId('sort').value="new"; applyAndRender(); });
+
+    applyAndRender();
+  </script>
+</body>
+</html>
